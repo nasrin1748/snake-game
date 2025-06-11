@@ -1,0 +1,95 @@
+<html>
+  <head>
+    <title>Snake Game (Canvas)</title>
+    <style>
+      body { background: #f9f9f9; font-family: monospace; }
+      canvas { background: #fff; display: block; margin: 24px auto; border: 2px solid #008b8b; }
+      .score { text-align: center; font-size: 24px; color: #228b22; }
+    </style>
+  </head>
+  <body>
+    <div class="score" id="score">Score: 0</div>
+    <canvas id="game" width="400" height="400"></canvas>
+    <script>
+      const canvas = document.getElementById('game');
+      const ctx = canvas.getContext('2d');
+      const grid = 20;
+      let snake = [{x: 160, y: 200}];
+      let direction = 'RIGHT';
+      let food = {x: 200, y: 200};
+      let score = 0;
+      let gameOver = false;
+
+      function draw() {
+        ctx.clearRect(0, 0, 400, 400);
+
+        // Draw food
+        ctx.fillStyle = 'red';
+        ctx.fillRect(food.x, food.y, grid, grid);
+
+        // Draw snake
+        ctx.fillStyle = 'green';
+        snake.forEach((p, idx) => {
+          ctx.fillRect(p.x, p.y, grid, grid);
+        });
+
+        // Draw head
+        ctx.fillStyle = '#008b8b';
+        ctx.fillRect(snake[0].x, snake[0].y, grid, grid);
+      }
+
+      function update() {
+        if (gameOver) return;
+
+        let head = {x: snake[0].x, y: snake[0].y};
+        if (direction === 'LEFT') head.x -= grid;
+        if (direction === 'RIGHT') head.x += grid;
+        if (direction === 'UP') head.y -= grid;
+        if (direction === 'DOWN') head.y += grid;
+
+        // Wall collision
+        if (head.x < 0 || head.x >= 400 || head.y < 0 || head.y >= 400) {
+          gameOver = true;
+          alert('Game Over! Score: ' + score);
+          return;
+        }
+
+        // Self collision
+        if (snake.some((s, idx) => idx !== 0 && s.x === head.x && s.y === head.y)) {
+          gameOver = true;
+          alert('Game Over! Score: ' + score);
+          return;
+        }
+
+        snake.unshift(head);
+
+        // Eat food
+        if (head.x === food.x && head.y === food.y) {
+          score++;
+          document.getElementById('score').innerText = 'Score: ' + score;
+          food = {
+            x: Math.floor(Math.random() * 20) * grid,
+            y: Math.floor(Math.random() * 20) * grid
+          };
+        } else {
+          snake.pop();
+        }
+      }
+
+      function loop() {
+        update();
+        draw();
+        if (!gameOver) setTimeout(loop, 100);
+      }
+
+      document.addEventListener('keydown', function(e) {
+        if (e.key === 'ArrowLeft' && direction !== 'RIGHT') direction = 'LEFT';
+        else if (e.key === 'ArrowRight' && direction !== 'LEFT') direction = 'RIGHT';
+        else if (e.key === 'ArrowUp' && direction !== 'DOWN') direction = 'UP';
+        else if (e.key === 'ArrowDown' && direction !== 'UP') direction = 'DOWN';
+      });
+
+      loop();
+    </script>
+  </body>
+</html>
